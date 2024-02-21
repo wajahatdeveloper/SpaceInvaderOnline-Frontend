@@ -1,0 +1,75 @@
+{
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+      "@typescript-eslint",
+      "unused-imports",
+      "eslint-comments",
+      "promise",
+      "unicorn",
+      "prettier"
+    ],
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/eslint-recommended",
+      "plugin:@typescript-eslint/recommended",
+      "plugin:eslint-comments/recommended",
+      "plugin:promise/recommended",
+      "plugin:unicorn/recommended",
+      "plugin:prettier/recommended",
+      "prettier"
+    ],
+    "parserOptions": {
+      "project": "./tsconfig.json",
+      "ecmaVersion": 2020,
+      "sourceType": "module"
+  },
+  "env": {
+    "es6": true,
+    "browser": true,
+    "node": true,
+    "jasmine": true
+},
+    "rules":{
+        "@typescript-eslint/no-non-null-assertion" : "off",
+        "unused-imports/no-unused-imports-ts": "error",
+        "no-debugger": "off",
+        "no-underscore-dangle": "off",
+        "no-param-reassign": "off",
+        "no-console": "off",
+        "no-shadow": "off",
+        "lines-between-class-members": "off",
+        "class-methods-use-this": "off",
+        "no-prototype-builtins": "off",
+        "unicorn/prevent-abbreviations": "off",
+        "unicorn/no-null": "off",
+        "import/no-extraneous-dependencies": "off",
+        "import/prefer-default-export": "off",
+        "import/no-default-export": "off",
+        "@typescript-eslint/camelcase": "off",
+        "@typescript-eslint/no-unused-vars": "off",
+        "@typescript-eslint/no-unused-expressions": "off",
+        "@typescript-eslint/no-explicit-an": "off",
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "@typescript-eslint/no-var-requires": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/explicit-module-boundary-types": "off",
+        "@typescript-eslint/no-use-before-define": ["error", {
+          "functions": false,
+          "classes": true,
+          "variables": true,
+          "typedefs": true
+        }],
+        "import/extensions": [
+            "off",
+            "ignorePackages",
+            {
+              "js": "ignorePackages",
+              "jsx": "ignorePackages",
+              "ts": "ignorePackages",
+              "tsx": "ignorePackages"
+            }
+        ],
+        "eslint-plugin-import/no-default-export": 0
+    }
+  }
