@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import LoadingScene from './scenes/LoadingScene';
+import LoadingScene from './scenes/loading-scene';
 
 const config: Phaser.Types.Core.GameConfig = {
   parent: 'app',
