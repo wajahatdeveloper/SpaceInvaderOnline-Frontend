@@ -5,6 +5,10 @@ export default class LoadingScene extends Phaser.Scene {
   loadingProgress: Phaser.GameObjects.Rectangle | undefined;
   loadingBarValue: integer | undefined;
 
+  constructor() {
+    super('loading-scene');
+  }
+
   preload() {
     this.loadingProgress = this.add.rectangle(
       400,
@@ -28,9 +32,8 @@ export default class LoadingScene extends Phaser.Scene {
     }
   }
 
-  create() {}
-
   onLoadingComplete() {
     console.log(`Loading Complete.`);
+    this.scene.launch('game-scene');
   }
 }
