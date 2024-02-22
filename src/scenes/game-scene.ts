@@ -42,7 +42,17 @@ export default class GameScene extends Phaser.Scene {
     );
   }
 
-  init() {
+  onConnect() {
+    this.myClientId = Math.random() * 9999 + 1;
+    this.socket.emit('enter', this.myClientId);
+    console.log(`Connected to ws with id: ${this.socket.id}`);
+  }
+
+  onDisconnect() {
+    console.log(`Disconnected from ws`);
+  }
+
+  create() {
     this.cursorKeys = this.input.keyboard?.createCursorKeys();
 
     this.anims.create({
@@ -55,20 +65,8 @@ export default class GameScene extends Phaser.Scene {
 
     this.socket.on('connect', this.onConnect);
     this.socket.on('disconnect', this.onDisconnect);
-  }
 
-  onConnect() {
-    this.myClientId = Math.random() * 9999 + 1;
-    this.socket.emit('enter', this.myClientId);
-    console.log(`Connected to ws with id: ${this.socket.id}`);
-  }
-
-  onDisconnect() {
-    console.log(`Disconnected from ws`);
-  }
-
-  create() {
-    this.init();
+    console.log(`Game Scene Loaded`);
   }
 
   updateGameState() {}

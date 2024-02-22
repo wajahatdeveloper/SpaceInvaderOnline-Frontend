@@ -34,6 +34,6 @@ export default class LoadingScene extends Phaser.Scene {
 
   onLoadingComplete() {
     console.log(`Loading Complete.`);
-    this.scene.launch('game-scene');
+    this.scene.switch('game-scene');
   }
 }
