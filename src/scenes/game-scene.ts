@@ -4,7 +4,9 @@ import { Socket, io } from 'socket.io-client';
 export default class GameScene extends Phaser.Scene {
   cursorKeys: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
   serverUrl: string = 'http://localhost:8000';
-  socket: Socket = io(this.serverUrl);
+  socket: Socket = io(this.serverUrl, {
+    transports: ['websocket'],
+  });
   myClientId: number = 0;
 
   constructor() {
