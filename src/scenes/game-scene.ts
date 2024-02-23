@@ -1,13 +1,8 @@
 import Phaser from 'phaser';
-import { Socket, io } from 'socket.io-client';
+import * as socket from '../socket-handler';
 
 export default class GameScene extends Phaser.Scene {
   cursorKeys: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
-  serverUrl: string = 'http://localhost:8000';
-  socket: Socket = io(this.serverUrl, {
-    transports: ['websocket'],
-  });
-  myClientId: number = 0;
 
   constructor() {
     super('game-scene');
@@ -44,16 +39,6 @@ export default class GameScene extends Phaser.Scene {
     );
   }
 
-  onConnect() {
-    this.myClientId = Math.random() * 9999 + 1;
-    this.socket.emit('enter', this.myClientId);
-    console.log(`Connected to ws with id: ${this.socket.id}`);
-  }
-
-  onDisconnect() {
-    console.log(`Disconnected from ws`);
-  }
-
   create() {
     this.cursorKeys = this.input.keyboard?.createCursorKeys();
 
@@ -64,11 +49,8 @@ export default class GameScene extends Phaser.Scene {
       repeat: 0,
       hideOnComplete: true,
     });
-
-    this.socket.on('connect', this.onConnect);
-    this.socket.on('disconnect', this.onDisconnect);
-
     console.log(`Game Scene Loaded`);
+    console.log(`My Unique Id is ${socket.myUniqueId}`);
   }
 
   updateGameState() {}
