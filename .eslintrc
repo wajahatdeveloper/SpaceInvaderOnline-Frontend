@@ -44,6 +44,7 @@
         "no-param-reassign": "off",
         "no-console": "off",
         "no-shadow": "off",
+        "eslint-comments/disable-enable-pair": ["error", {"allowWholeFile": true}],
         "lines-between-class-members": "off",
         "class-methods-use-this": "off",
         "no-prototype-builtins": "off",

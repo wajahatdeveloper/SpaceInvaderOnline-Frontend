@@ -80,7 +80,7 @@ export default class LoadingScene extends Phaser.Scene {
 
   onLoadingComplete() {
     console.log(`Loading Complete.`);
-    this.scene.run('lobby-scene');
+    this.scene.run('username-scene');
     this.scene.remove('loading-scene');
   }
 }
