@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import * as socket from '../socket-handler';
 import { Bullet, Player, GameStateUpdate } from './types';
+//import Globals from '../globals';
 
 export default class GameScene extends Phaser.Scene {
   canvasWidth: integer = 1400;

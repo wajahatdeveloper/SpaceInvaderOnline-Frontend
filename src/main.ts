@@ -1,12 +1,14 @@
 import Phaser from 'phaser';
 import LoadingScene from './scenes/loading-scene';
 import GameScene from './scenes/game-scene';
+import LobbyScene from './scenes/lobby-scene';
+import Globals from './globals';
 
 const config: Phaser.Types.Core.GameConfig = {
   parent: 'app',
   type: Phaser.AUTO,
-  width: 1400,
-  height: 750,
+  width: Globals.CANVAS_WIDTH,
+  height: Globals.CANVAS_HEIGHT,
   scale: {
     mode: Phaser.Scale.ScaleModes.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
@@ -18,7 +20,7 @@ const config: Phaser.Types.Core.GameConfig = {
       debug: true,
     },
   },
-  scene: [LoadingScene, GameScene],
+  scene: [LoadingScene, LobbyScene, GameScene],
 };
 
 export default new Phaser.Game(config);
