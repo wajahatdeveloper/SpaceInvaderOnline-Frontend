@@ -7,18 +7,13 @@ interface Bullet {
   bulletSprite: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
 }
 
-interface Avatar {
-  id: integer;
+interface Player {
+  [key: integer]: integer;
   x: integer | undefined;
   y: integer | undefined;
-  avatarSprite: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
-}
-
-interface Player {
-  id: integer;
   score: integer;
   isAlive: boolean;
-  avatar: Avatar;
+  avatarSprite: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
 }
 
 interface GameStateUpdate {
@@ -35,8 +30,7 @@ export default class GameScene extends Phaser.Scene {
   cursorKeys: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
   ship: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody | undefined;
   visibleBullets: Map<integer, Bullet> = new Map();
-  avatars: Avatar[] = [];
-  players: Player[] = [];
+  players: Map<integer, Player> = new Map();
   gameState: GameStateUpdate | undefined;
   amIAlive: boolean = true;
   bulletThatShotMe: integer = 0;
@@ -94,6 +88,7 @@ export default class GameScene extends Phaser.Scene {
     this.ship = this.physics.add
       .sprite(socket.latestShipPosition, this.canvasHeight - 32, 'ship')
       .setOrigin(0.5, 0.5);
+    this.ship.setCollideWorldBounds(true);
 
     socket.enterRoom();
   }
@@ -103,7 +98,26 @@ export default class GameScene extends Phaser.Scene {
       socket.publishPlayerLostNotification(this.bulletThatShotMe, socket.myUniqueId);
     }
   }
-  publishPlayerInput() {}
+
+  updatePlayerInput() {
+    let keyPressed = '';
+
+    if (Phaser.Input.Keyboard.JustDown(this.cursorKeys!.left) && this.amIAlive) {
+      keyPressed = 'left';
+    } else if (Phaser.Input.Keyboard.JustDown(this.cursorKeys!.right) && this.amIAlive) {
+      keyPressed = 'right';
+    }
+
+    if (keyPressed === '') return;
+
+    const payload = {
+      keyPressed,
+      playerId: socket.myUniqueId,
+    };
+
+    socket.publishPlayerInput(payload);
+  }
+
   createBullet(bulletState: any) {
     const bullet: Bullet = {
       id: bulletState.id,
@@ -113,21 +127,22 @@ export default class GameScene extends Phaser.Scene {
     };
     this.visibleBullets.set(bulletState.id, bullet);
 
-    // if (
-    //   this.amIAlive &&
-    //   this.physics.add.overlap(
-    //     this.visibleBullets[bulletState.id].bulletSprite,
-    //     this.avatars[socket.myUniqueId]?.avatarSprite,
-    //     this.sendPlayerLostNotification,
-    //     undefined,
-    //     this,
-    //   )
-    // ) {
-    //   this.bulletThatShotMe = bulletState.id;
-    // }
+    if (
+      this.amIAlive &&
+      this.players.get(socket.myUniqueId)?.avatarSprite &&
+      this.physics.add.overlap(
+        this.visibleBullets.get(bulletState.id)!.bulletSprite,
+        this.players.get(socket.myUniqueId)!.avatarSprite,
+        this.sendPlayerLostNotification,
+        undefined,
+        this,
+      )
+    ) {
+      this.bulletThatShotMe = bulletState.id;
+    }
   }
 
-  killPlayer(deadPlayerId: integer) {}
+  killPlayer() {}
 
   update() {
     if (socket.isGameOn) {
@@ -153,23 +168,24 @@ export default class GameScene extends Phaser.Scene {
         }
       }
 
-      for (const avatar of this.avatars) {
-        if (!this.players.filter(x => x.avatar === avatar)) {
-          avatar.avatarSprite.destroy();
-          const index = this.avatars.indexOf(avatar);
-          if (index !== -1) {
-            this.avatars.splice(index, 1);
-          }
-        }
-      }
+      socket.players.forEach((item, index, arr) => {
+        this.players.set(item.id, item);
+      });
 
-      for (const player of this.players) {
-        if (player.isAlive) {
-          player.avatar.x = this.gameState?.x;
-          player.avatar.y = this.gameState?.y;
-          //TODO: Display Score
+      this.players.forEach((player, key, map) => {
+        if (player.avatarSprite == undefined) {
+          player.avatarSprite = this.physics.add
+            .sprite(player.x!, player.y!, `${key}-avatar`, 'avatarA_1')
+            .setOrigin(0.5, 0.5);
+          player.avatarSprite.setCollideWorldBounds(true);
         }
-      }
+        // if (player.isAlive) {
+        //   player.avatarSprite.x = this.gameState!.x;
+        //   player.avatarSprite.y = this.gameState!.y;
+        // }
+      });
     }
+
+    this.updatePlayerInput();
   }
 }

@@ -8,6 +8,7 @@ let myUniqueId: integer = 0;
 let isGameOn: boolean = false;
 let latestShipPosition: integer = 0;
 const bullets: BulletState[] = [];
+let players: any[] = [];
 
 const serverUrl: string = 'http://localhost:8000';
 const socket: Socket = io(serverUrl, {
@@ -28,9 +29,10 @@ function onDisconnect() {
 }
 
 function onUpdate(updatedState: any) {
-  console.log(`${JSON.stringify(updatedState.bulletState)}`);
+  console.log(`${JSON.stringify(updatedState)}`);
   latestShipPosition = updatedState.shipPositionX;
   isGameOn = updatedState.isMatchStarted;
+  players = updatedState.players;
   const bulletState = updatedState.bulletState;
   bullets.length = 0;
   if (bulletState && Object.keys(bulletState).length > 0) {
@@ -41,6 +43,10 @@ function onUpdate(updatedState: any) {
       bullets.push(bulletState);
     }
   }
+}
+
+function publishPlayerInput(payload: any) {
+  socket.emit('pos', payload);
 }
 
 function enterRoom() {
@@ -58,6 +64,8 @@ export {
   isGameOn,
   latestShipPosition,
   bullets,
+  players,
   enterRoom,
   publishPlayerLostNotification,
+  publishPlayerInput,
 };
