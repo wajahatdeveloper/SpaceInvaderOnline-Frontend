@@ -18,7 +18,7 @@ export default class LoadingScene extends Phaser.Scene {
       Phaser.Display.Color.GetColor(0, 0, 255),
       1,
     );
-    this.loadingTime = this.time.delayedCall(5000, this.onLoadingComplete, [], this);
+    this.loadingTime = this.time.delayedCall(5, this.onLoadingComplete, [], this);
     this.loadingBarValue = 0;
     const text = this.add.text(620, 550, 'Loading..');
     text.setScale(2);
