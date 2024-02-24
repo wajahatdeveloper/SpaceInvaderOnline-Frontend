@@ -2,8 +2,8 @@ import Phaser from 'phaser';
 import * as socket from '../socket-handler';
 
 interface Bullet {
+  [key: integer]: integer;
   id: integer;
-  toLaunch: boolean;
   bulletSprite: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
 }
 
@@ -34,10 +34,13 @@ export default class GameScene extends Phaser.Scene {
 
   cursorKeys: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
   ship: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody | undefined;
-  visibleBullets: Bullet[] = [];
+  visibleBullets: Map<integer, Bullet> = new Map();
   avatars: Avatar[] = [];
   players: Player[] = [];
   gameState: GameStateUpdate | undefined;
+  amIAlive: boolean = true;
+  bulletThatShotMe: integer = 0;
+  bulletThatShotSomeone: integer = 0;
 
   constructor() {
     super('game-scene');
@@ -95,28 +98,58 @@ export default class GameScene extends Phaser.Scene {
     socket.enterRoom();
   }
 
-  publishPlayerDeathNotification() {}
+  sendPlayerLostNotification() {
+    if (this.amIAlive) {
+      socket.publishPlayerLostNotification(this.bulletThatShotMe, socket.myUniqueId);
+    }
+  }
   publishPlayerInput() {}
-  createBullet(bullet: Bullet) {}
+  createBullet(bulletState: any) {
+    const bullet: Bullet = {
+      id: bulletState.id,
+      bulletSprite: this.physics.add
+        .sprite(socket.latestShipPosition, this.canvasHeight - 32, 'bullet')
+        .setOrigin(0.5, 0.5),
+    };
+    this.visibleBullets.set(bulletState.id, bullet);
+
+    // if (
+    //   this.amIAlive &&
+    //   this.physics.add.overlap(
+    //     this.visibleBullets[bulletState.id].bulletSprite,
+    //     this.avatars[socket.myUniqueId]?.avatarSprite,
+    //     this.sendPlayerLostNotification,
+    //     undefined,
+    //     this,
+    //   )
+    // ) {
+    //   this.bulletThatShotMe = bulletState.id;
+    // }
+  }
+
   killPlayer(deadPlayerId: integer) {}
 
   update() {
     if (socket.isGameOn) {
+      // update ship position from state
       this.ship!.x = socket.latestShipPosition;
 
-      for (const bullet of this.visibleBullets) {
-        if (bullet.toLaunch) {
-          bullet.toLaunch = false;
-          this.createBullet(bullet);
+      // update bullet instantiation from state
+      for (const bullet of socket.bullets) {
+        if (this.visibleBullets.get(bullet.id)) {
+          // const sprite = this.visibleBullets.get(bullet.id)!.bulletSprite;
+          // sprite.setX(bullet.y);
         } else {
-          bullet.bulletSprite.y -= 20;
-          if (bullet.bulletSprite.y < 0 || bullet.id == bulletThatShotSomeone) {
-            bullet.bulletSprite.destroy();
-            const index = this.visibleBullets.indexOf(bullet);
-            if (index !== -1) {
-              this.visibleBullets.splice(index, 1);
-            }
-          }
+          this.createBullet(bullet);
+        }
+      }
+
+      // update bullet positions and check bounds
+      for (const bullet of this.visibleBullets) {
+        bullet[1].bulletSprite.y -= 20;
+        if (bullet[1].bulletSprite.y < 0 || bullet[1].id == this.bulletThatShotSomeone) {
+          bullet[1].bulletSprite.destroy();
+          this.visibleBullets.delete(bullet[0]);
         }
       }
 

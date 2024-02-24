@@ -1,8 +1,13 @@
 import { Socket, io } from 'socket.io-client';
 
+interface BulletState {
+  id: integer;
+}
+
 let myUniqueId: integer = 0;
 let isGameOn: boolean = false;
 let latestShipPosition: integer = 0;
+const bullets: BulletState[] = [];
 
 const serverUrl: string = 'http://localhost:8000';
 const socket: Socket = io(serverUrl, {
@@ -23,9 +28,19 @@ function onDisconnect() {
 }
 
 function onUpdate(updatedState: any) {
-  console.log(`${updatedState.shipPositionX}`);
+  console.log(`${JSON.stringify(updatedState.bulletState)}`);
   latestShipPosition = updatedState.shipPositionX;
   isGameOn = updatedState.isMatchStarted;
+  const bulletState = updatedState.bulletState;
+  bullets.length = 0;
+  if (bulletState && Object.keys(bulletState).length > 0) {
+    const bullet = bullets.find(x => x.id === bulletState.id);
+    if (bullet) {
+      // bullet.y = bulletState.y;
+    } else {
+      bullets.push(bulletState);
+    }
+  }
 }
 
 function enterRoom() {
@@ -33,4 +48,16 @@ function enterRoom() {
   socket.emit('enter', { id: myUniqueId });
 }
 
-export { socket, myUniqueId, isGameOn, latestShipPosition, enterRoom };
+function publishPlayerLostNotification(bulletId: integer, playerUniqueId: integer) {
+  socket.emit('player-lost', { bulletId, playerUniqueId });
+}
+
+export {
+  socket,
+  myUniqueId,
+  isGameOn,
+  latestShipPosition,
+  bullets,
+  enterRoom,
+  publishPlayerLostNotification,
+};
