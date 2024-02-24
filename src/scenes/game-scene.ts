@@ -1,12 +1,9 @@
 import Phaser from 'phaser';
 import * as socket from '../socket-handler';
 import { Bullet, Player, GameStateUpdate } from '../types';
-//import Globals from '../globals';
+import Globals from '../globals';
 
 export default class GameScene extends Phaser.Scene {
-  canvasWidth: integer = 1400;
-  canvasHeight: integer = 750;
-
   cursorKeys: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
   ship: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody | undefined;
   visibleBullets: Map<integer, Bullet> = new Map();
@@ -29,7 +26,7 @@ export default class GameScene extends Phaser.Scene {
     console.log(`My Unique Id is ${socket.myUniqueId}`);
 
     this.ship = this.physics.add
-      .sprite(socket.latestShipPosition, this.canvasHeight - 32, 'ship')
+      .sprite(socket.latestShipPosition, Globals.CANVAS_HEIGHT - 32, 'ship')
       .setOrigin(0.5, 0.5);
     this.ship.setCollideWorldBounds(true);
 
@@ -65,7 +62,7 @@ export default class GameScene extends Phaser.Scene {
     const bullet: Bullet = {
       id: bulletState.id,
       bulletSprite: this.physics.add
-        .sprite(socket.latestShipPosition, this.canvasHeight - 32, 'bullet')
+        .sprite(socket.latestShipPosition, Globals.CANVAS_HEIGHT - 32, 'bullet')
         .setOrigin(0.5, 0.5),
     };
     this.visibleBullets.set(bulletState.id, bullet);

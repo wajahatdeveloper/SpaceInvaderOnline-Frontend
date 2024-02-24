@@ -18,4 +18,7 @@ export interface GameStateUpdate {
   y: integer;
   score: integer;
   isAlive: boolean;
+}export interface BulletState {
+  id: integer;
 }
+

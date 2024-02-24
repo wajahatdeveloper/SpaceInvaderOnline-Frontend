@@ -1,34 +1,57 @@
 import { Socket, io } from 'socket.io-client';
+import { BulletState } from './types';
+import Globals from './globals';
 
-interface BulletState {
-  id: integer;
-}
-
-let myUniqueId: integer = 0;
 let isGameOn: boolean = false;
 let latestShipPosition: integer = 0;
 const bullets: BulletState[] = [];
 let players: any[] = [];
 
-const serverUrl: string = 'http://localhost:8000';
-const socket: Socket = io(serverUrl, {
-  transports: ['websocket'],
-});
+let socket: Socket;
 
-socket.on('connect', onConnect);
-socket.on('disconnect', onDisconnect);
-socket.on('game-state', onUpdate);
+function init() {
+  socket = io(Globals.SERVER_URL, {
+    transports: ['websocket'],
+  });
+
+  socket.on('connect', onConnect);
+  socket.on('disconnect', onDisconnect);
+}
 
 function onConnect() {
-  myUniqueId = Math.floor(Math.random() * 9999 + 1);
-  console.log(`Connected to ws with id: ${socket.id}`);
+  console.log(`Connected to server with id: ${socket.id}`);
+  enterRoom();
 }
 
 function onDisconnect() {
-  console.log(`Disconnected from ws`);
+  console.log(`Disconnected from server`);
 }
 
-function onUpdate(updatedState: any) {
+function enterRoom() {
+  console.log(`Entering room with UserName: ${Globals.UserName}`);
+  socket.emit('enter-room', { username: Globals.UserName });
+
+  socket.on('game-start', onGameStart);
+}
+
+function onGameStart() {
+  console.log(`Game Started`);
+
+  socket.on('game-state', onReceivedGameState);
+  socket.on('player-states', onReceivedPlayerStates);
+  socket.on('lost-notif', onReceivedLostNotifications);
+}
+
+function leaveRoom() {
+  console.log(`Leaving room with UserName: ${Globals.UserName}`);
+  socket.emit('leave-room', { username: Globals.UserName });
+}
+
+function onReceivedPlayerStates(updatedPlayerStates: any) {}
+
+function onReceivedLostNotifications(updatedLostNotifications: any) {}
+
+function onReceivedGameState(updatedState: any) {
   console.log(`${JSON.stringify(updatedState)}`);
   latestShipPosition = updatedState.shipPositionX;
   isGameOn = updatedState.isMatchStarted;
@@ -49,23 +72,19 @@ function publishPlayerInput(payload: any) {
   socket.emit('pos', payload);
 }
 
-function enterRoom() {
-  console.log(`Entering room with unique id ${myUniqueId}`);
-  socket.emit('enter', { id: myUniqueId });
-}
-
 function publishPlayerLostNotification(bulletId: integer, playerUniqueId: integer) {
   socket.emit('player-lost', { bulletId, playerUniqueId });
 }
 
 export {
   socket,
-  myUniqueId,
   isGameOn,
   latestShipPosition,
   bullets,
   players,
+  init,
   enterRoom,
+  leaveRoom,
   publishPlayerLostNotification,
   publishPlayerInput,
 };

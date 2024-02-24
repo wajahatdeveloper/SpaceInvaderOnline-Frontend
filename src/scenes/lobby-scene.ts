@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import * as socket from '../socket-handler';
 import Globals from '../globals';
 
 export default class LobbyScene extends Phaser.Scene {
@@ -9,11 +10,10 @@ export default class LobbyScene extends Phaser.Scene {
     super('lobby-scene');
   }
 
-  preload() {}
-
   create() {
     this.add.tileSprite(0, 0, 0, 0, 'background');
     this.createUI();
+    socket.init();
   }
 
   private createUI() {
