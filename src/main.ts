@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import LoadingScene from './scenes/loading-scene';
 import GameScene from './scenes/game-scene';
 import LobbyScene from './scenes/lobby-scene';
-import Globals from './globals';
+import Globals from './support/globals';
 import UsernameScene from './scenes/username-scene';
 
 const config: Phaser.Types.Core.GameConfig = {

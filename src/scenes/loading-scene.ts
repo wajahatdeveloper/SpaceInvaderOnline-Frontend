@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import Globals from '../globals';
+import Globals from '../support/globals';
 
 export default class LoadingScene extends Phaser.Scene {
   loadingTime: Phaser.Time.TimerEvent | undefined;

@@ -1,13 +1,13 @@
 import Phaser from 'phaser';
-import * as socket from '../socket-handler';
-import { Bullet, Player, GameStateUpdate } from '../types';
-import Globals from '../globals';
+import * as socket from '../socket-handling/socket-init';
+import { Bullet, Player, GameStateUpdate } from '../support/types';
+import Globals from '../support/globals';
 
 export default class GameScene extends Phaser.Scene {
   cursorKeys: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
   ship: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody | undefined;
   visibleBullets: Map<integer, Bullet> = new Map();
-  players: Map<integer, Player> = new Map();
+  players: Map<string, Player> = new Map();
   gameState: GameStateUpdate | undefined;
   amIAlive: boolean = true;
   bulletThatShotMe: integer = 0;
@@ -22,20 +22,19 @@ export default class GameScene extends Phaser.Scene {
   create() {
     this.cursorKeys = this.input.keyboard?.createCursorKeys();
 
-    console.log(`Game Scene Loaded`);
-    console.log(`My Unique Id is ${socket.myUniqueId}`);
-
     this.ship = this.physics.add
       .sprite(socket.latestShipPosition, Globals.CANVAS_HEIGHT - 32, 'ship')
       .setOrigin(0.5, 0.5);
     this.ship.setCollideWorldBounds(true);
 
     socket.enterRoom();
+
+    console.log(`Game Scene Loaded`);
   }
 
   sendPlayerLostNotification() {
     if (this.amIAlive) {
-      socket.publishPlayerLostNotification(this.bulletThatShotMe, socket.myUniqueId);
+      socket.publishPlayerLostNotification(this.bulletThatShotMe, Globals.UserName);
     }
   }
 
@@ -52,7 +51,7 @@ export default class GameScene extends Phaser.Scene {
 
     const payload = {
       keyPressed,
-      playerId: socket.myUniqueId,
+      username: Globals.UserName,
     };
 
     socket.publishPlayerInput(payload);
@@ -69,10 +68,10 @@ export default class GameScene extends Phaser.Scene {
 
     if (
       this.amIAlive &&
-      this.players.get(socket.myUniqueId)?.avatarSprite &&
+      this.players.get(Globals.UserName)?.avatarSprite &&
       this.physics.add.overlap(
         this.visibleBullets.get(bulletState.id)!.bulletSprite,
-        this.players.get(socket.myUniqueId)!.avatarSprite,
+        this.players.get(Globals.UserName)!.avatarSprite,
         this.sendPlayerLostNotification,
         undefined,
         this,
@@ -119,10 +118,6 @@ export default class GameScene extends Phaser.Scene {
             .setOrigin(0.5, 0.5);
           player.avatarSprite.setCollideWorldBounds(true);
         }
-        // if (player.isAlive) {
-        //   player.avatarSprite.x = this.gameState!.x;
-        //   player.avatarSprite.y = this.gameState!.y;
-        // }
       });
     }
 

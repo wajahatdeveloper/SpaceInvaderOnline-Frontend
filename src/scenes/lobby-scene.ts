@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
-import * as socket from '../socket-handler';
-import Globals from '../globals';
+import ServerData from '../socket-handling';
+import Globals from '../support/globals';
 
 export default class LobbyScene extends Phaser.Scene {
   textUserName: any;
@@ -13,7 +13,12 @@ export default class LobbyScene extends Phaser.Scene {
   create() {
     this.add.tileSprite(0, 0, 0, 0, 'background');
     this.createUI();
-    socket.init();
+
+    ServerData.init();
+    ServerData.hookGameStart(() => {
+      this.scene.run('game-scene');
+      this.scene.remove('lobby-scene');
+    });
   }
 
   private createUI() {
@@ -29,9 +34,5 @@ export default class LobbyScene extends Phaser.Scene {
         fontSize: '32px ',
       })
       .setOrigin(0.5, 0.5);
-  }
-
-  gotoGameplay() {
-    //this.scene.switch('game-scene');
   }
 }

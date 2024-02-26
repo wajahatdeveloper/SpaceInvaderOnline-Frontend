@@ -15,6 +15,7 @@ const SERVER_URL: string = 'http://localhost:8000';
 
 // GLOBAL VARIABLES
 let UserName: string = '';
+let ClientId: string = '';
 
 export default {
   ID_SHIP,
@@ -30,4 +31,5 @@ export default {
   SERVER_URL,
 
   UserName,
+  ClientId,
 };
