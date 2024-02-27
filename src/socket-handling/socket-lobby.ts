@@ -17,14 +17,14 @@ function requestAvailableRoom() {
   );
 
   console.log(`Waiting for available room..`);
-  state.socket!.on('enter-room', data => enterRoom(data, state.socket!));
+  state.socket!.on('joined-room', data => onJoinedRoom(data, state.socket!));
 }
 
-function enterRoom(data: any, socket: Socket) {
+function onJoinedRoom(data: any, socket: Socket) {
   console.log(`Entering room id : ${data.roomId}`);
 
   // wait for game to start
-  socket.on('game-start', onGameStart);
+  socket.on('start-game', onGameStart);
 }
 
 function onGameStart() {
