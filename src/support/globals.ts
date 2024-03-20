@@ -15,7 +15,15 @@ const SERVER_URL: string = 'http://localhost:8000';
 
 // GLOBAL VARIABLES
 let UserName: string = '';
-let ClientId: string = '';
+let ClientId: string = resolveClientId();
+
+function resolveClientId(): string {
+  let newId = (Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000).toString();
+  if (localStorage.getItem('clientId') == null) {
+    localStorage.setItem('clientId', newId);
+  }
+  return newId;
+}
 
 export default {
   ID_SHIP,

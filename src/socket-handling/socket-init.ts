@@ -1,20 +1,22 @@
 import { io } from 'socket.io-client';
 import Globals from '../support/globals';
-import lobby from './socket-lobby';
-import state from './socket-state';
+import { requestAvailableRoom } from './socket-lobby';
+import { setSocket } from './socket-state';
 
 function init() {
-  state.socket = io(Globals.SERVER_URL, {
+  const newSocket = io(Globals.SERVER_URL, {
     transports: ['websocket'],
+    query: { clientId: `${Globals.ClientId}` },
   });
+  setSocket(newSocket);
 
-  state.socket.on('connect', () => {
+  newSocket.on('connect', () => {
     console.log(`Connected to server`);
-    lobby.requestAvailableRoom();
+    requestAvailableRoom();
   });
-  state.socket.on('disconnect', () => {
+  newSocket.on('disconnect', () => {
     console.log(`Disconnected from server`);
   });
 }
 
-export default { init };
+export { init };

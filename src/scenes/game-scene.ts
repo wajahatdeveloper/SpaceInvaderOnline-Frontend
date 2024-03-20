@@ -1,12 +1,12 @@
-import Phaser from 'phaser';
-import * as socket from '../socket-handling/socket-init';
-import { Bullet, Player, GameStateUpdate } from '../support/types';
+import { Player, GameStateUpdate } from '../support/types';
 import Globals from '../support/globals';
+import socketGameplay from '../socket-handling/socket-gameplay';
+import { getState } from '../socket-handling/socket-state';
 
 export default class GameScene extends Phaser.Scene {
   cursorKeys: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
   ship: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody | undefined;
-  visibleBullets: Map<integer, Bullet> = new Map();
+  visibleBullets: any[] = [];
   players: Map<string, Player> = new Map();
   gameState: GameStateUpdate | undefined;
   amIAlive: boolean = true;
@@ -17,24 +17,22 @@ export default class GameScene extends Phaser.Scene {
     super('game-scene');
   }
 
-  preload() {}
-
   create() {
     this.cursorKeys = this.input.keyboard?.createCursorKeys();
 
     this.ship = this.physics.add
-      .sprite(socket.latestShipPosition, Globals.CANVAS_HEIGHT - 32, 'ship')
+      .sprite(Globals.CANVAS_WIDTH / 2 - 32, Globals.CANVAS_HEIGHT - 32, 'ship')
       .setOrigin(0.5, 0.5);
     this.ship.setCollideWorldBounds(true);
 
-    socket.enterRoom();
-
     console.log(`Game Scene Loaded`);
+
+    socketGameplay.onGameStart();
   }
 
   sendPlayerLostNotification() {
     if (this.amIAlive) {
-      socket.publishPlayerLostNotification(this.bulletThatShotMe, Globals.UserName);
+      socketGameplay.publishPlayerLostNotification(this.bulletThatShotMe, Globals.UserName);
     }
   }
 
@@ -49,65 +47,46 @@ export default class GameScene extends Phaser.Scene {
 
     if (keyPressed === '') return;
 
-    const payload = {
-      keyPressed,
-      username: Globals.UserName,
-    };
-
-    socket.publishPlayerInput(payload);
+    socketGameplay.publishPlayerInput(keyPressed);
   }
 
-  createBullet(bulletState: any) {
-    const bullet: Bullet = {
-      id: bulletState.id,
-      bulletSprite: this.physics.add
-        .sprite(socket.latestShipPosition, Globals.CANVAS_HEIGHT - 32, 'bullet')
-        .setOrigin(0.5, 0.5),
-    };
-    this.visibleBullets.set(bulletState.id, bullet);
+  createBullet() {
+    const bulletObject = this.physics.add
+      .sprite(getState().latestShipPosition, Globals.CANVAS_HEIGHT - 32, 'bullet')
+      .setOrigin(0.5, 0.5);
+
+    bulletObject.setVelocityY(-5);
+
+    this.visibleBullets.push(bulletObject);
 
     if (
       this.amIAlive &&
       this.players.get(Globals.UserName)?.avatarSprite &&
       this.physics.add.overlap(
-        this.visibleBullets.get(bulletState.id)!.bulletSprite,
+        bulletObject,
         this.players.get(Globals.UserName)!.avatarSprite,
         this.sendPlayerLostNotification,
         undefined,
         this,
       )
     ) {
-      this.bulletThatShotMe = bulletState.id;
+      bulletObject.destroy();
     }
   }
 
   killPlayer() {}
 
-  update() {
-    if (socket.isGameOn) {
+  update(time: number, delta: number) {
+    if (getState().isGameOn) {
       // update ship position from state
-      this.ship!.x = socket.latestShipPosition;
+      this.ship!.x = getState().latestShipPosition;
 
       // update bullet instantiation from state
-      for (const bullet of socket.bullets) {
-        if (this.visibleBullets.get(bullet.id)) {
-          // const sprite = this.visibleBullets.get(bullet.id)!.bulletSprite;
-          // sprite.setX(bullet.y);
-        } else {
-          this.createBullet(bullet);
-        }
+      if (getState().bullet > 0) {
+        this.createBullet();
       }
 
-      // update bullet positions and check bounds
-      for (const bullet of this.visibleBullets) {
-        bullet[1].bulletSprite.y -= 20;
-        if (bullet[1].bulletSprite.y < 0 || bullet[1].id == this.bulletThatShotSomeone) {
-          bullet[1].bulletSprite.destroy();
-          this.visibleBullets.delete(bullet[0]);
-        }
-      }
-
-      socket.players.forEach((item, index, arr) => {
+      getState().players.forEach((item, index, arr) => {
         this.players.set(item.id, item);
       });
 

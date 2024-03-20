@@ -1,8 +1,10 @@
-import state from './socket-state';
+import { setState, getState } from './socket-state';
 
 function onGameStart() {
-  state.socket!.on('game-state', onReceivedGameState);
-  state.socket!.on('lost-notif', onReceivedLostNotifications);
+  console.log(`On Game Start`);
+
+  getState().socket!.on('game-state', onReceivedGameState);
+  getState().socket!.on('lost-notif', onReceivedLostNotifications);
 }
 
 function onReceivedLostNotifications(updatedLostNotifications: any) {
@@ -11,27 +13,20 @@ function onReceivedLostNotifications(updatedLostNotifications: any) {
 
 function onReceivedGameState(updatedState: any) {
   console.log(`${JSON.stringify(updatedState)}`);
-  state.latestShipPosition = updatedState.shipPositionX;
-  state.isGameOn = updatedState.isMatchStarted;
-  state.players = updatedState.players;
-  const bulletState = updatedState.bulletState;
-  state.bullets.length = 0;
-  if (bulletState && Object.keys(bulletState).length > 0) {
-    const bullet = state.bullets.find(x => x.id === bulletState.id);
-    if (bullet) {
-      // bullet.y = bulletState.y;
-    } else {
-      state.bullets.push(bulletState);
-    }
-  }
+  setState({
+    latestShipPosition: updatedState.shipPositionX,
+    isGameOn: updatedState.isGameOn,
+    players: updatedState.playerUpdates,
+    bullet: updatedState.bulletState,
+  });
 }
 
 function publishPlayerInput(payload: any) {
-  state.socket!.emit('player-input', payload);
+  getState().socket!.emit('player-input', payload);
 }
 
 function publishPlayerLostNotification(bulletId: integer, username: string) {
-  state.socket!.emit('player-lost', { bulletId, username });
+  getState().socket!.emit('player-lost', { bulletId, username });
 }
 
 export default {

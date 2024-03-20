@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import ServerData from '../socket-handling';
+import { init } from '../socket-handling/socket-init';
+import { hookGameStart } from '../socket-handling/socket-lobby';
 import Globals from '../support/globals';
 
 export default class LobbyScene extends Phaser.Scene {
@@ -14,8 +15,8 @@ export default class LobbyScene extends Phaser.Scene {
     this.add.tileSprite(0, 0, 0, 0, 'background');
     this.createUI();
 
-    ServerData.init();
-    ServerData.hookGameStart(() => {
+    init();
+    hookGameStart(() => {
       this.scene.run('game-scene');
       this.scene.remove('lobby-scene');
     });
