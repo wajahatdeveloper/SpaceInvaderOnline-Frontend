@@ -1,14 +1,9 @@
 /* eslint-disable prefer-const */
-import { Socket } from 'socket.io-client';
 
 let isGameOn: boolean = false;
 let latestShipPosition: integer = 0;
 let bullet: integer = 0;
 let players: any[] = [];
-
-function setSocket(newSocket: Socket) {
-  socket = newSocket;
-}
 
 function setState(state: any) {
   isGameOn = state.isGameOn;
@@ -18,7 +13,7 @@ function setState(state: any) {
 }
 
 function getState() {
-  return { isGameOn, latestShipPosition, bullet, players, socket };
+  return { isGameOn, latestShipPosition, bullet, players };
 }
 
-export { setSocket, getState, setState };
+export { getState, setState };

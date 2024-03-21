@@ -8,19 +8,21 @@ export enum ServerEvent {
 }
 
 class EventManager<T> {
-  private callbacks: Map<ServerEvent, Callback<T>> = new Map();
+  private callbacks: Map<ServerEvent, Callback<T>[]> = new Map();
 
   // Method to register a callback for a specific outcome
   registerCallback(outcome: ServerEvent, callback: Callback<T>): void {
-    this.callbacks.set(outcome, callback);
+    const callbacks = this.callbacks.get(outcome) || [];
+    callbacks.push(callback);
+    this.callbacks.set(outcome, callbacks);
   }
 
   // Method to trigger callbacks for a specific outcome
   triggerCallback(outcome: ServerEvent, data: T): void {
-    const callback = this.callbacks.get(outcome);
-    if (callback) {
+    const callbacks = this.callbacks.get(outcome) || [];
+    callbacks.forEach(callback => {
       callback(data, outcome);
-    }
+    });
   }
 }
 

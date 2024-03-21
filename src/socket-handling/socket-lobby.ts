@@ -1,7 +1,8 @@
-import Globals from '../support/globals';
-import { eventManager, connect, ServerEvent } from '../net-phaser/net-phaser';
+import { eventManager, ServerEvent } from '../net-phaser/net-phaser-events';
+import { connect } from '../net-phaser/net-phaser';
 import { getState } from './socket-state';
 import { Socket } from 'socket.io-client';
+import Globals from '../support/globals';
 
 let callbackOnGameStart: any;
 
