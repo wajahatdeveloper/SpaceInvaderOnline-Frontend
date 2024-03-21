@@ -6,8 +6,6 @@ let latestShipPosition: integer = 0;
 let bullet: integer = 0;
 let players: any[] = [];
 
-let socket: Socket | undefined;
-
 function setSocket(newSocket: Socket) {
   socket = newSocket;
 }

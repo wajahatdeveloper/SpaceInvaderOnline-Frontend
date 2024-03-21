@@ -1,17 +1,25 @@
-import { v4 as uuidv4 } from 'uuid';
 import Globals from '../support/globals';
+import { eventManager, connect, ServerEvent } from '../net-phaser/net-phaser';
 import { getState } from './socket-state';
 import { Socket } from 'socket.io-client';
 
 let callbackOnGameStart: any;
 
-function requestAvailableRoom() {
-  if (Globals.ClientId === '') {
-    Globals.ClientId = localStorage.getItem('ClientId') ?? uuidv4();
-    localStorage.setItem('ClientId', Globals.ClientId);
-  }
+function init() {
+  eventManager.registerCallback(ServerEvent.ConnectionSuccess, () => {
+    console.log(`Connected to server`);
+    requestAvailableRoom();
+  });
 
-  getState().socket!.emit('request-room', {
+  eventManager.registerCallback(ServerEvent.ConnectionFailure, () => {
+    console.log(`Disconnected from server`);
+  });
+
+  connect(Globals.SERVER_URL, Globals.ClientId);
+}
+
+function requestAvailableRoom() {
+  getState().socket!.emit('requestRoom', {
     username: Globals.UserName,
     clientId: Globals.ClientId,
   });
@@ -45,4 +53,4 @@ function leaveRoom() {
   getState().socket!.emit('leave-room', { username: Globals.UserName });
 }
 
-export { requestAvailableRoom, leaveRoom, hookGameStart };
+export { init, requestAvailableRoom, leaveRoom, hookGameStart };

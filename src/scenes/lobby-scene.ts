@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
-import { init } from '../socket-handling/socket-init';
-import { hookGameStart } from '../socket-handling/socket-lobby';
+import { init, hookGameStart } from '../socket-handling/socket-lobby';
 import Globals from '../support/globals';
 
 export default class LobbyScene extends Phaser.Scene {
