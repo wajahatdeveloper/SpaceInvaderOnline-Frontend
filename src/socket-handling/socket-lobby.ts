@@ -1,4 +1,4 @@
-import { eventManager, ServerEvent } from '../net-phaser/net-phaser-events';
+import { eventManager, ClientEvent } from '../net-phaser/net-phaser-events';
 import { connect } from '../net-phaser/net-phaser';
 import { getState } from './socket-state';
 import { Socket } from 'socket.io-client';
@@ -7,12 +7,12 @@ import Globals from '../support/globals';
 let callbackOnGameStart: any;
 
 function init() {
-  eventManager.registerCallback(ServerEvent.ConnectionSuccess, () => {
+  eventManager.registerCallback(ClientEvent.ConnectionSuccess, () => {
     console.log(`Connected to server`);
     requestAvailableRoom();
   });
 
-  eventManager.registerCallback(ServerEvent.ConnectionFailure, () => {
+  eventManager.registerCallback(ClientEvent.ConnectionFailure, () => {
     console.log(`Disconnected from server`);
   });
 
