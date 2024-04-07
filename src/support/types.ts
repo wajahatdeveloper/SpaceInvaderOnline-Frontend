@@ -9,6 +9,7 @@ export interface Bullet {
 export interface Player {
   [key: integer]: integer;
   username: string;
+  clientId: string;
   x: integer | undefined;
   y: integer | undefined;
   score: integer;

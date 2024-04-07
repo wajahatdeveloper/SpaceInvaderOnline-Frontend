@@ -12,6 +12,7 @@ const ID_AVATAR_C: string = 'avatarC';
 const CANVAS_WIDTH: integer = 1400;
 const CANVAS_HEIGHT: integer = 750;
 const SERVER_URL: string = 'http://localhost:8000';
+const BULLET_VELOCITY_Y: integer = -100;
 
 // GLOBAL VARIABLES
 let UserName: string = '';
@@ -37,6 +38,7 @@ export default {
   CANVAS_WIDTH,
   CANVAS_HEIGHT,
   SERVER_URL,
+  BULLET_VELOCITY_Y,
 
   UserName,
   ClientId,

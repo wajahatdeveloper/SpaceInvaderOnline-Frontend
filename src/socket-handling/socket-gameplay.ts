@@ -18,10 +18,11 @@ function onPlayerLost(loserId: string) {
 }
 
 function onReceivedGameState(updatedState: MatchUpdateObject) {
-  console.log(`${JSON.stringify(updatedState)}`);
   gameState.latestShipPosition = updatedState.shipPositionX;
   gameState.playerStates = updatedState.playerUpdates;
   gameState.bullet = updatedState.shootBullet === true ? 1 : 0;
+  console.log(`${gameState.latestShipPosition} ${gameState.bullet}`);
+  console.log(`${JSON.stringify(gameState.playerStates)}`);
 }
 
 function publishPlayerInput(payload: any) {

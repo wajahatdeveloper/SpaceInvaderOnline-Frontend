@@ -19,6 +19,7 @@ export interface MatchInitalObject {
 
 export interface PlayerInitalObject {
   username: string;
+  clientId: string;
   avatarIndex: number;
 }
 

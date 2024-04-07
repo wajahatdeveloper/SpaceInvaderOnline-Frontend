@@ -1,4 +1,4 @@
-import { Player, GameStateUpdate } from '../support/types';
+import { Player } from '../support/types';
 import Globals from '../support/globals';
 import socketGameplay from '../socket-handling/socket-gameplay';
 import { gameState } from '../socket-handling/socket-state';
@@ -6,15 +6,12 @@ import { gameState } from '../socket-handling/socket-state';
 export default class GameScene extends Phaser.Scene {
   cursorKeys: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
   ship: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody | undefined;
-  visibleBullets: any[] = [];
+  visibleBullets: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody[] = [];
   players: Player[] = [];
-  gameState: GameStateUpdate | undefined;
   amIAlive: boolean = true;
-  bulletThatShotMe: integer = 0;
-  bulletThatShotSomeone: integer = 0;
 
-  getPlayerByUsername(username: string): Player | undefined {
-    return this.players.find(p => p.username === username);
+  getPlayerByClientId(clientId: string): Player | undefined {
+    return this.players.find(p => p.clientId === clientId);
   }
 
   constructor() {
@@ -25,15 +22,17 @@ export default class GameScene extends Phaser.Scene {
     this.cursorKeys = this.input.keyboard?.createCursorKeys();
 
     this.ship = this.physics.add
-      .sprite(Globals.CANVAS_WIDTH / 2 - 32, Globals.CANVAS_HEIGHT - 32, 'ship')
+      .sprite(Globals.CANVAS_WIDTH / 2 - 32, Globals.CANVAS_HEIGHT - 32, Globals.ID_SHIP)
       .setOrigin(0.5, 0.5);
     this.ship.setCollideWorldBounds(true);
 
     console.log(`Game Scene Loaded`);
 
+    // initialize local player states from match initial state
     gameState.matchInitalState.playerInitals.forEach(playerInital => {
       const player: Player = {
         username: playerInital.username,
+        clientId: playerInital.clientId,
         x: 0,
         y: 0,
         score: 0,
@@ -42,6 +41,7 @@ export default class GameScene extends Phaser.Scene {
         avatarSprite: undefined,
       };
       gameState.playerStates.push(player);
+      this.players.push(player);
     });
 
     socketGameplay.onGameStart();
@@ -69,15 +69,14 @@ export default class GameScene extends Phaser.Scene {
 
   createBullet() {
     const bulletObject = this.physics.add
-      .sprite(gameState.latestShipPosition, Globals.CANVAS_HEIGHT - 32, 'bullet')
+      .sprite(gameState.latestShipPosition, Globals.CANVAS_HEIGHT - 32, Globals.ID_BULLET)
       .setOrigin(0.5, 0.5);
-
-    bulletObject.setVelocityY(-5);
-
+    bulletObject.setVelocityY(Globals.BULLET_VELOCITY_Y);
     this.visibleBullets.push(bulletObject);
 
-    const me = this.getPlayerByUsername(Globals.UserName);
+    const me = this.getPlayerByClientId(Globals.UserName);
 
+    // register bullet collision with player avatar
     if (
       this.amIAlive &&
       me?.avatarSprite &&
@@ -93,7 +92,9 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
-  killPlayer() {}
+  killPlayer() {
+    this.amIAlive = false;
+  }
 
   update(time: number, delta: number) {
     if (gameState.isGameOn) {
@@ -103,18 +104,36 @@ export default class GameScene extends Phaser.Scene {
       // update bullet instantiation from state
       if (gameState.bullet > 0) {
         this.createBullet();
+        gameState.bullet = 0;
       }
 
-      this.players.forEach((player, key, map) => {
+      // clean up bullets no longer in view
+      this.visibleBullets.forEach(bullet => {
+        if (!bullet.visible) {
+          bullet.destroy();
+        }
+      });
+
+      // instantiate player avatars (one time only)
+      this.players.forEach(player => {
         if (player.avatarSprite == undefined) {
           player.avatarSprite = this.physics.add
-            .sprite(player.x!, player.y!, `${key}-avatar`, 'avatarA_1')
+            .sprite(player.x!, player.y!, Globals.ID_AVATAR_A)
             .setOrigin(0.5, 0.5);
           player.avatarSprite.setCollideWorldBounds(true);
         }
       });
-    }
 
-    this.updatePlayerInput();
+      // update player avatar positions
+      this.players.forEach(player => {
+        if (player.avatarSprite != undefined) {
+          const playerState = gameState.playerStates.find(x => x.clientId === player.clientId);
+          player.avatarSprite.x = playerState.x;
+          player.avatarSprite.y = playerState.y;
+        }
+      });
+
+      this.updatePlayerInput();
+    }
   }
 }
