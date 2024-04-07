@@ -1,5 +1,5 @@
 // Define a callback function type
-type Callback<T> = (data: T, event: NetEvent) => void;
+type Callback<T> = (data: T) => void;
 
 // Define an enum for different uses
 export enum NetEvent {
@@ -27,7 +27,7 @@ class EventManager<T> {
   triggerCallback(outcome: NetEvent, data: T): void {
     const callbacks = this.callbacks.get(outcome) || [];
     callbacks.forEach(callback => {
-      callback(data, outcome);
+      callback(data);
     });
   }
 }

@@ -1,42 +1,34 @@
-import { eventManager, ClientEvent } from '../net-phaser/net-phaser-events';
-import { connect } from '../net-phaser/net-phaser';
-import { getState } from './socket-state';
-import { Socket } from 'socket.io-client';
 import Globals from '../support/globals';
+import { JoinSession, NetEvent, connectToServer, eventManager, socket } from '../net-phaser-client';
 
 let callbackOnGameStart: any;
 
 function init() {
-  eventManager.registerCallback(ClientEvent.ConnectionSuccess, () => {
+  eventManager.registerCallback(NetEvent.OnConnectedToServer, () => {
     console.log(`Connected to server`);
     requestAvailableRoom();
   });
 
-  eventManager.registerCallback(ClientEvent.ConnectionFailure, () => {
+  eventManager.registerCallback(NetEvent.OnDisconnectedFromServer, () => {
     console.log(`Disconnected from server`);
   });
 
-  connect(Globals.SERVER_URL, Globals.ClientId);
+  connectToServer(Globals.SERVER_URL, Globals.ClientId);
 }
 
 function requestAvailableRoom() {
-  getState().socket!.emit('requestRoom', {
-    username: Globals.UserName,
-    clientId: Globals.ClientId,
+  eventManager.registerCallback(NetEvent.OnSessionJoined, sessionId => {
+    console.log(`Joined Room with Id ${sessionId}`);
+    socket.on('match-inital', onGameStart);
   });
-  console.log(
-    `Requested available room : with UserName: ${Globals.UserName} and ClientId: ${Globals.ClientId}`,
-  );
+
+  eventManager.registerCallback(NetEvent.OnSessionLeft, clientId => {
+    console.log(`Player with Id ${clientId} Left Room`);
+  });
+
+  JoinSession();
 
   console.log(`Waiting for available room..`);
-  getState().socket!.on('joined-room', data => onJoinedRoom(data, getState().socket!));
-}
-
-function onJoinedRoom(data: any, socket: Socket) {
-  console.log(`Entering room id : ${data.roomId}`);
-
-  // wait for game to start
-  socket.on('start-game', onGameStart);
 }
 
 function onGameStart() {
@@ -49,9 +41,4 @@ function hookGameStart(callback: any) {
   callbackOnGameStart = callback;
 }
 
-function leaveRoom() {
-  console.log(`Leaving room with UserName: ${Globals.UserName}`);
-  getState().socket!.emit('leave-room', { username: Globals.UserName });
-}
-
-export { init, requestAvailableRoom, leaveRoom, hookGameStart };
+export { init, requestAvailableRoom, hookGameStart };
