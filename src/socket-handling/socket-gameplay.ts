@@ -1,38 +1,40 @@
-import { setState, getState } from './socket-state';
+import { socket } from '../net-phaser-client';
+import { MatchUpdateObject, gameState } from './socket-state';
 
 function onGameStart() {
   console.log(`On Game Start`);
-
-  getState().socket!.on('game-state', onReceivedGameState);
-  getState().socket!.on('lost-notif', onReceivedLostNotifications);
+  gameState.isGameOn = true;
+  socket.on('match-state', onReceivedGameState);
+  socket.on('player-won', onPlayerWon);
+  socket.on('player-lost', onPlayerLost);
 }
 
-function onReceivedLostNotifications(updatedLostNotifications: any) {
-  console.log(`onReceivedLostNotifications: ${JSON.stringify(updatedLostNotifications)}`);
+function onPlayerWon(winnerId: string) {
+  console.log(`Player ${winnerId} Won`);
 }
 
-function onReceivedGameState(updatedState: any) {
+function onPlayerLost(loserId: string) {
+  console.log(`Player ${loserId} Lost`);
+}
+
+function onReceivedGameState(updatedState: MatchUpdateObject) {
   console.log(`${JSON.stringify(updatedState)}`);
-  setState({
-    latestShipPosition: updatedState.shipPositionX,
-    isGameOn: updatedState.isGameOn,
-    players: updatedState.playerUpdates,
-    bullet: updatedState.bulletState,
-  });
+  gameState.latestShipPosition = updatedState.shipPositionX;
+  gameState.playerStates = updatedState.playerUpdates;
+  gameState.bullet = updatedState.shootBullet === true ? 1 : 0;
 }
 
 function publishPlayerInput(payload: any) {
-  getState().socket!.emit('player-input', payload);
+  socket.emit('player-input', payload);
 }
 
-function publishPlayerLostNotification(bulletId: integer, username: string) {
-  getState().socket!.emit('player-lost', { bulletId, username });
+function publishPlayerHitNotification(username: string) {
+  socket.emit('player-hit', { username });
 }
 
 export default {
   onGameStart,
-  onReceivedLostNotifications,
   onReceivedGameState,
   publishPlayerInput,
-  publishPlayerLostNotification,
+  publishPlayerHitNotification,
 };

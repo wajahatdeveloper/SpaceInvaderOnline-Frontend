@@ -1,7 +1,9 @@
 import Globals from '../support/globals';
 import { JoinSession, NetEvent, connectToServer, eventManager, socket } from '../net-phaser-client';
+import { MatchInitalObject, gameState } from './socket-state';
 
-let callbackOnGameStart: any;
+type Callback<T> = (data: T) => void;
+let callbackOnGameStart: Callback<MatchInitalObject>;
 
 function init() {
   eventManager.registerCallback(NetEvent.OnConnectedToServer, () => {
@@ -31,13 +33,13 @@ function requestAvailableRoom() {
   console.log(`Waiting for available room..`);
 }
 
-function onGameStart() {
+function onGameStart(matchInitals: MatchInitalObject) {
   console.log(`Game Started`);
-
-  callbackOnGameStart();
+  gameState.matchInitalState = matchInitals;
+  callbackOnGameStart(matchInitals);
 }
 
-function hookGameStart(callback: any) {
+function hookGameStart(callback: Callback<MatchInitalObject>) {
   callbackOnGameStart = callback;
 }
 

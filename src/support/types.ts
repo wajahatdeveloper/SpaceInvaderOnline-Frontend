@@ -5,14 +5,18 @@ export interface Bullet {
   id: integer;
   bulletSprite: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
 }
+
 export interface Player {
   [key: integer]: integer;
+  username: string;
   x: integer | undefined;
   y: integer | undefined;
   score: integer;
   isAlive: boolean;
-  avatarSprite: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+  avatarSprite: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody | undefined;
+  avatarIndex: number;
 }
+
 export interface GameStateUpdate {
   x: integer;
   y: integer;

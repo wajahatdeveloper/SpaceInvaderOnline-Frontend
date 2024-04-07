@@ -1,17 +1,21 @@
 import { Player, GameStateUpdate } from '../support/types';
 import Globals from '../support/globals';
 import socketGameplay from '../socket-handling/socket-gameplay';
-import { getState } from '../socket-handling/socket-state';
+import { gameState } from '../socket-handling/socket-state';
 
 export default class GameScene extends Phaser.Scene {
   cursorKeys: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
   ship: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody | undefined;
   visibleBullets: any[] = [];
-  players: Map<string, Player> = new Map();
+  players: Player[] = [];
   gameState: GameStateUpdate | undefined;
   amIAlive: boolean = true;
   bulletThatShotMe: integer = 0;
   bulletThatShotSomeone: integer = 0;
+
+  getPlayerByUsername(username: string): Player | undefined {
+    return this.players.find(p => p.username === username);
+  }
 
   constructor() {
     super('game-scene');
@@ -27,12 +31,25 @@ export default class GameScene extends Phaser.Scene {
 
     console.log(`Game Scene Loaded`);
 
+    gameState.matchInitalState.playerInitals.forEach(playerInital => {
+      const player: Player = {
+        username: playerInital.username,
+        x: 0,
+        y: 0,
+        score: 0,
+        isAlive: true,
+        avatarIndex: playerInital.avatarIndex,
+        avatarSprite: undefined,
+      };
+      gameState.playerStates.push(player);
+    });
+
     socketGameplay.onGameStart();
   }
 
   sendPlayerLostNotification() {
     if (this.amIAlive) {
-      socketGameplay.publishPlayerLostNotification(this.bulletThatShotMe, Globals.UserName);
+      socketGameplay.publishPlayerHitNotification(Globals.UserName);
     }
   }
 
@@ -52,19 +69,21 @@ export default class GameScene extends Phaser.Scene {
 
   createBullet() {
     const bulletObject = this.physics.add
-      .sprite(getState().latestShipPosition, Globals.CANVAS_HEIGHT - 32, 'bullet')
+      .sprite(gameState.latestShipPosition, Globals.CANVAS_HEIGHT - 32, 'bullet')
       .setOrigin(0.5, 0.5);
 
     bulletObject.setVelocityY(-5);
 
     this.visibleBullets.push(bulletObject);
 
+    const me = this.getPlayerByUsername(Globals.UserName);
+
     if (
       this.amIAlive &&
-      this.players.get(Globals.UserName)?.avatarSprite &&
+      me?.avatarSprite &&
       this.physics.add.overlap(
         bulletObject,
-        this.players.get(Globals.UserName)!.avatarSprite,
+        me?.avatarSprite,
         this.sendPlayerLostNotification,
         undefined,
         this,
@@ -77,18 +96,14 @@ export default class GameScene extends Phaser.Scene {
   killPlayer() {}
 
   update(time: number, delta: number) {
-    if (getState().isGameOn) {
+    if (gameState.isGameOn) {
       // update ship position from state
-      this.ship!.x = getState().latestShipPosition;
+      this.ship!.x = gameState.latestShipPosition;
 
       // update bullet instantiation from state
-      if (getState().bullet > 0) {
+      if (gameState.bullet > 0) {
         this.createBullet();
       }
-
-      getState().players.forEach((item, index, arr) => {
-        this.players.set(item.id, item);
-      });
 
       this.players.forEach((player, key, map) => {
         if (player.avatarSprite == undefined) {
