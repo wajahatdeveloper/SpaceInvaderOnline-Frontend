@@ -39,6 +39,36 @@ class GameState {
     playerInitals: [],
   };
 
+  private _matchOver: boolean = false;
+
+  get isMatchOver(): boolean {
+    return this._matchOver;
+  }
+
+  set isMatchOver(value: boolean) {
+    this._matchOver = value;
+  }
+
+  private _winnerId: string = '';
+
+  get winnerId(): string {
+    return this._winnerId;
+  }
+
+  set winnerId(value: string) {
+    this._winnerId = value;
+  }
+
+  private _loserId: string = '';
+
+  get loserId(): string {
+    return this._loserId;
+  }
+
+  set loserId(value: string) {
+    this._loserId = value;
+  }
+
   // Getter and Setter for matchInitalState
   get matchInitalState(): MatchInitalObject {
     return this._matchInitalState;

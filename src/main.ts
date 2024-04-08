@@ -4,6 +4,7 @@ import GameScene from './scenes/game-scene';
 import LobbyScene from './scenes/lobby-scene';
 import Globals from './support/globals';
 import UsernameScene from './scenes/username-scene';
+import ConclusionScene from './scenes/conclusion-scene';
 
 const config: Phaser.Types.Core.GameConfig = {
   parent: 'app',
@@ -24,7 +25,7 @@ const config: Phaser.Types.Core.GameConfig = {
       debug: true,
     },
   },
-  scene: [LoadingScene, UsernameScene, LobbyScene, GameScene],
+  scene: [LoadingScene, UsernameScene, LobbyScene, GameScene, ConclusionScene],
 };
 
 export default new Phaser.Game(config);

@@ -9,9 +9,10 @@ export default class GameScene extends Phaser.Scene {
   visibleBullets: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody[] = [];
   players: Player[] = [];
   amIAlive: boolean = true;
+  scoreText: Phaser.GameObjects.Text | undefined;
 
-  getPlayerByClientId(clientId: string): Player | undefined {
-    return this.players.find(p => p.clientId === clientId);
+  getPlayerByClientId(clientId: string): Player {
+    return this.players.find(p => p.username === clientId)!;
   }
 
   constructor() {
@@ -19,6 +20,12 @@ export default class GameScene extends Phaser.Scene {
   }
 
   create() {
+    this.scoreText = this.add.text(10, 10, 'Please enter name to play', {
+      color: 'white',
+      fontFamily: 'Arial',
+      fontSize: '32px ',
+    });
+
     this.cursorKeys = this.input.keyboard?.createCursorKeys();
 
     this.ship = this.physics.add
@@ -47,6 +54,7 @@ export default class GameScene extends Phaser.Scene {
 
   sendPlayerLostNotification() {
     if (this.amIAlive) {
+      this.amIAlive = false;
       socketGameplay.publishPlayerHitNotification(Globals.UserName);
     }
   }
@@ -72,21 +80,21 @@ export default class GameScene extends Phaser.Scene {
       .setVelocityY(Globals.BULLET_VELOCITY_Y);
     this.visibleBullets.push(bulletObject);
 
-    const me = this.getPlayerByClientId(Globals.UserName);
+    const me = this.getPlayerByClientId(Globals.ClientId);
 
     // register bullet collision with player avatar
-    if (
-      this.amIAlive &&
-      me?.avatarSprite &&
+    if (this.amIAlive && me?.avatarSprite) {
       this.physics.add.overlap(
         bulletObject,
         me?.avatarSprite,
-        this.sendPlayerLostNotification,
+        (bullet, player) => {
+          console.log(`bullet hit player`);
+          bullet.destroy();
+          this.sendPlayerLostNotification();
+        },
         undefined,
         this,
-      )
-    ) {
-      bulletObject.destroy();
+      );
     }
   }
 
@@ -94,8 +102,17 @@ export default class GameScene extends Phaser.Scene {
     this.amIAlive = false;
   }
 
+  gotoConclusionScene() {
+    this.scene.switch('conclusion-scene');
+  }
+
   update(time: number, delta: number) {
     if (gameState.isGameOn) {
+      if (gameState.isMatchOver) {
+        this.gotoConclusionScene();
+        return;
+      }
+
       // update ship position from state
       this.ship!.x = gameState.latestShipPosition;
 
@@ -129,6 +146,9 @@ export default class GameScene extends Phaser.Scene {
           });
         }
       }
+
+      const me = this.getPlayerByClientId(Globals.ClientId);
+      this.scoreText!.setText(`Score: ${me.score}`);
 
       this.updatePlayerInput();
     }

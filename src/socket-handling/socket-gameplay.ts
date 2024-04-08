@@ -11,10 +11,14 @@ function onGameStart() {
 
 function onPlayerWon(winnerId: string) {
   console.log(`Player ${winnerId} Won`);
+  gameState.isMatchOver = true;
+  gameState.winnerId = winnerId;
 }
 
 function onPlayerLost(loserId: string) {
   console.log(`Player ${loserId} Lost`);
+  gameState.isMatchOver = true;
+  gameState.loserId = loserId;
 }
 
 function onReceivedGameState(updatedState: MatchUpdateObject) {
