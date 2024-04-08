@@ -33,8 +33,6 @@ export default class GameScene extends Phaser.Scene {
       const player: Player = {
         username: playerInital.username,
         clientId: playerInital.clientId,
-        x: 0,
-        y: 0,
         score: 0,
         isAlive: true,
         avatarIndex: playerInital.avatarIndex,
@@ -70,8 +68,8 @@ export default class GameScene extends Phaser.Scene {
   createBullet() {
     const bulletObject = this.physics.add
       .sprite(gameState.latestShipPosition, Globals.CANVAS_HEIGHT - 32, Globals.ID_BULLET)
-      .setOrigin(0.5, 0.5);
-    bulletObject.setVelocityY(Globals.BULLET_VELOCITY_Y);
+      .setOrigin(0.5, 0.5)
+      .setVelocityY(Globals.BULLET_VELOCITY_Y);
     this.visibleBullets.push(bulletObject);
 
     const me = this.getPlayerByClientId(Globals.UserName);
@@ -114,24 +112,23 @@ export default class GameScene extends Phaser.Scene {
         }
       });
 
-      // instantiate player avatars (one time only)
-      this.players.forEach(player => {
-        if (player.avatarSprite == undefined) {
-          player.avatarSprite = this.physics.add
-            .sprite(player.x!, player.y!, Globals.ID_AVATAR_A)
-            .setOrigin(0.5, 0.5);
-          player.avatarSprite.setCollideWorldBounds(true);
+      for (let index = 0; index < this.players.length; index++) {
+        if (this.players[index].avatarSprite === undefined) {
+          // instantiate player avatars (one time only)
+          this.players[index].avatarSprite = this.physics.add
+            .sprite(0, 0, index === 0 ? Globals.ID_AVATAR_A : Globals.ID_AVATAR_B)
+            .setOrigin(0.5, 0.5)
+            .setCollideWorldBounds(true);
+        } else {
+          // update local player states from match update state
+          gameState.playerStates.forEach((playerState, index) => {
+            this.players[index].avatarSprite!.x = playerState.x;
+            this.players[index].avatarSprite!.y = playerState.y;
+            this.players[index].score = playerState.score;
+            this.players[index].isAlive = playerState.isAlive;
+          });
         }
-      });
-
-      // update player avatar positions
-      this.players.forEach(player => {
-        if (player.avatarSprite != undefined) {
-          const playerState = gameState.playerStates.find(x => x.clientId === player.clientId);
-          player.avatarSprite.x = playerState.x;
-          player.avatarSprite.y = playerState.y;
-        }
-      });
+      }
 
       this.updatePlayerInput();
     }

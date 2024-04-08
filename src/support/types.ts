@@ -10,8 +10,6 @@ export interface Player {
   [key: integer]: integer;
   username: string;
   clientId: string;
-  x: integer | undefined;
-  y: integer | undefined;
   score: integer;
   isAlive: boolean;
   avatarSprite: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody | undefined;
