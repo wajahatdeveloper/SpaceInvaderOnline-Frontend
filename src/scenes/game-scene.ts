@@ -87,7 +87,7 @@ export default class GameScene extends Phaser.Scene {
       this.physics.add.overlap(
         bulletObject,
         me?.avatarSprite,
-        (bullet, player) => {
+        bullet => {
           console.log(`bullet hit player`);
           bullet.destroy();
           this.sendPlayerLostNotification();
@@ -106,7 +106,7 @@ export default class GameScene extends Phaser.Scene {
     this.scene.switch('conclusion-scene');
   }
 
-  update(time: number, delta: number) {
+  update() {
     if (gameState.isGameOn) {
       if (gameState.isMatchOver) {
         this.gotoConclusionScene();
